@@ -28,4 +28,3 @@ impl<'r> FromSegments<'r> for BitXORFromSeg {
         Ok(BitXORFromSeg(val))
     }
 }
-

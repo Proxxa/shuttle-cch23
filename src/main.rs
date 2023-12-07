@@ -1,7 +1,9 @@
 use rocket::{get, routes};
 
+mod day_four;
 mod day_one;
 mod example_day;
+mod day_six;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -16,7 +18,9 @@ async fn main() -> shuttle_rocket::ShuttleRocket {
         .mount(
             "/1",
             routes![/*day_one::bit_cube, */ day_one::bit_sled_cube],
-        );
+        )
+        .mount("/4", routes![day_four::strength, day_four::contest])
+        .mount("/6", routes![day_six::endpoint]);
 
     Ok(rocket.into())
 }

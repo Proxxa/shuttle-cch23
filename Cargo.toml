@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rocket = "0.5.0"
+rocket = { version = "0.5.0", features = ["json"] }
+serde = "1.0.193"
+serde_json = "1.0.108"
 shuttle-rocket = "0.34.0"
 shuttle-runtime = "0.34.0"
 tokio = "1.26.0"
