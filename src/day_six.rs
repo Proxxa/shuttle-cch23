@@ -1,5 +1,5 @@
-use rocket::{*, serde::json::Json};
 use ::serde::Serialize;
+use rocket::{serde::json::Json, *};
 
 #[derive(Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -11,7 +11,7 @@ pub struct DaySixResp {
     lonely_shelves: usize,
 }
 
-#[post("/", data="<data>")]
+#[post("/", data = "<data>")]
 pub fn endpoint(data: &str) -> Json<DaySixResp> {
     let mut elves = 0usize;
     let mut shelves = 0usize;
@@ -19,10 +19,14 @@ pub fn endpoint(data: &str) -> Json<DaySixResp> {
 
     data.split("elf").for_each(|s| {
         elves += 1;
-        if s.ends_with("sh") { shelves += 1; }
-        if s.trim() == "on a sh" { elves_on_shelves += 1; }
+        if s.ends_with("sh") {
+            shelves += 1;
+        }
+        if s.trim() == "on a sh" {
+            elves_on_shelves += 1;
+        }
     });
-    
+
     Json(DaySixResp {
         elf: elves - 1, // Counts one extra.
         elf_on_a_shelf: elves_on_shelves,

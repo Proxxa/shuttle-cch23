@@ -233,6 +233,7 @@ dependencies = [
 name = "cch23-yorip"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "rocket",
  "serde",
  "serde_json",
