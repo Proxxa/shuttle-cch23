@@ -75,9 +75,8 @@ pub fn bake_cookies(jar: &CookieJar) -> Result<Json<CookiesPantryData>, Status> 
                     // of ingredients removed for all cookies made.
                     pantry: d
                         .pantry
-                        .clone()
-                        .iter_mut()
-                        .map(|(k, &mut v)| (k.to_owned(), v - (d.recipe.get(k).unwrap_or(&0) * n)))
+                        .iter()
+                        .map(|(k, &v)| (k.to_owned(), v - (d.recipe.get(k).unwrap_or(&0) * n)))
                         .collect(),
                 })
             })(
