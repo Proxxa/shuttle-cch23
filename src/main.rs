@@ -1,5 +1,6 @@
 use rocket::{get, routes};
 
+mod day_eight;
 mod day_four;
 mod day_one;
 mod day_seven;
@@ -25,7 +26,8 @@ async fn main() -> shuttle_rocket::ShuttleRocket {
         .mount(
             "/7",
             routes![day_seven::b64_decode, day_seven::bake_cookies],
-        );
+        )
+        .mount("/8", routes![day_eight::weight, day_eight::drop]);
 
     Ok(rocket.into())
 }
