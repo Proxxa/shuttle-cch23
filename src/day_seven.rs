@@ -82,17 +82,11 @@ pub fn bake_cookies(jar: &CookieJar) -> Result<Json<CookiesPantryData>, Status> 
                 })
             })(
                 d.recipe
-                    .keys()
+                    .iter()
                     // Get the possible number of cookies
-                    .fold(usize::MAX, |a, k| {
+                    .fold(usize::MAX, |a, (k, v)| {
                         // Least of current accumulator and (available / per_cookie)
-                        min(
-                            a,
-                            d.pantry.get(k).unwrap_or(&0)
-                                / d.recipe.get(k).expect("Keys iterator gave nonexistent key"),
-                        )
-                        // Seriously, the expect should never occur, so I'll gladly pay the
-                        // overhead if it somehow DOES happen.
+                        min(a, d.pantry.get(k).unwrap_or(&0) / v)
                     }),
             )
         })

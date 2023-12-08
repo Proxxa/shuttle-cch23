@@ -1,5 +1,5 @@
 use ::serde::{Deserialize, Serialize};
-use rocket::{serde::json::Json, *};
+use rocket::{http::Status, serde::json::Json, *};
 
 #[derive(Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -37,23 +37,29 @@ pub struct ContestOutput {
 }
 
 #[post("/contest", data = "<data>")]
-pub fn contest(data: Json<Vec<ContestData>>) -> Json<ContestOutput> {
+pub fn contest(data: Json<Vec<ContestData>>) -> Result<Json<ContestOutput>, Status> {
     let fastest = data
         .iter()
         .max_by(|a, b| a.speed.total_cmp(&b.speed))
-        .unwrap();
+        .ok_or(Status { code: 400 })?;
     let fastest = format!(
         "Speeding past the finish line with a strength of {} is {}",
         fastest.strength, &fastest.name
     );
 
-    let tallest = data.iter().max_by_key(|r| r.height).unwrap();
+    let tallest = data
+        .iter()
+        .max_by_key(|r| r.height)
+        .ok_or(Status { code: 400 })?;
     let tallest = format!(
         "{} is standing tall with his {} cm wide antlers",
         &tallest.name, tallest.antler_width
     );
 
-    let magician = data.iter().max_by_key(|r| r.snow_magic_power).unwrap();
+    let magician = data
+        .iter()
+        .max_by_key(|r| r.snow_magic_power)
+        .ok_or(Status { code: 400 })?;
     let magician = format!(
         "{} could blast you away with a snow magic power of {}",
         &magician.name, magician.snow_magic_power
@@ -62,16 +68,16 @@ pub fn contest(data: Json<Vec<ContestData>>) -> Json<ContestOutput> {
     let consumer = data
         .iter()
         .max_by_key(|r| r.candies_eaten_yesterday)
-        .unwrap();
+        .ok_or(Status { code: 400 })?;
     let consumer = format!(
         "{} ate lots of candies, but also some {}",
         &consumer.name, &consumer.favorite_food
     );
 
-    Json(ContestOutput {
+    Ok(Json(ContestOutput {
         fastest,
         tallest,
         magician,
         consumer,
-    })
+    }))
 }
