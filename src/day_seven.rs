@@ -85,7 +85,10 @@ pub fn bake_cookies(jar: &CookieJar) -> Result<Json<CookiesPantryData>, Status> 
                     // Get the possible number of cookies
                     .fold(usize::MAX, |a, (k, v)| {
                         // Least of current accumulator and (available / per_cookie)
-                        min(a, d.pantry.get(k).unwrap_or(&0) / v)
+                        min(
+                            a,
+                            if v != &0 { d.pantry.get(k).unwrap_or(&0) / v } else { usize::MAX },
+                        )
                     }),
             )
         })
