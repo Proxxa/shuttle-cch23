@@ -1,12 +1,15 @@
-use rocket::{get, routes, fs::{FileServer, Options}};
+use rocket::{
+    fs::{FileServer, Options},
+    get, routes,
+};
 
 mod day_eight;
+mod day_eleven;
 mod day_four;
 mod day_one;
 mod day_seven;
 mod day_six;
 mod example_day;
-mod day_eleven;
 
 #[get("/")]
 fn index() -> &'static str {

@@ -87,7 +87,11 @@ pub fn bake_cookies(jar: &CookieJar) -> Result<Json<CookiesPantryData>, Status> 
                         // Least of current accumulator and (available / per_cookie)
                         min(
                             a,
-                            if v != &0 { d.pantry.get(k).unwrap_or(&0) / v } else { usize::MAX },
+                            if v != &0 {
+                                d.pantry.get(k).unwrap_or(&0) / v
+                            } else {
+                                usize::MAX
+                            },
                         )
                     }),
             )
