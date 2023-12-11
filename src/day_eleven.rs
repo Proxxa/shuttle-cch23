@@ -9,34 +9,20 @@ use std::io::Cursor;
 
 pub struct MyFormField(Vec<u8>);
 
+#[rocket::async_trait]
 impl<'v> FromFormField<'v> for MyFormField {
-    fn from_data<'life0, 'async_trait>(
-        field: DataField<'v, 'life0>,
-    ) -> core::pin::Pin<
-        Box<
-            dyn core::future::Future<Output = form::Result<'v, Self>>
-                + core::marker::Send
-                + 'async_trait,
-        >,
-    >
-    where
-        'v: 'async_trait,
-        'life0: 'async_trait,
-        Self: 'async_trait,
-    {
-        Box::pin(async {
-            field
-                .data
-                .open(rocket::data::ToByteUnit::bytes(usize::MAX))
-                .into_bytes()
-                .await
-                .map(|a| MyFormField(a.into_inner()))
-                .map_err(|e| {
-                    let mut es = Errors::new();
-                    es.push(e.into());
-                    es
-                })
-        })
+    async fn from_data(field: DataField<'v, '_>) -> form::Result<'v, Self> {
+        field
+            .data
+            .open(rocket::data::ToByteUnit::bytes(usize::MAX))
+            .into_bytes()
+            .await
+            .map(|a| MyFormField(a.into_inner()))
+            .map_err(|e| {
+                let mut es = Errors::new();
+                es.push(e.into());
+                es
+            })
     }
 }
 
