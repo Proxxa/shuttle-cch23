@@ -1,4 +1,4 @@
-use rocket::{get, routes};
+use rocket::{get, routes, fs::{FileServer, Options}};
 
 mod day_eight;
 mod day_four;
@@ -6,6 +6,7 @@ mod day_one;
 mod day_seven;
 mod day_six;
 mod example_day;
+mod day_eleven;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -27,7 +28,9 @@ async fn main() -> shuttle_rocket::ShuttleRocket {
             "/7",
             routes![day_seven::b64_decode, day_seven::bake_cookies],
         )
-        .mount("/8", routes![day_eight::weight, day_eight::drop]);
+        .mount("/8", routes![day_eight::weight, day_eight::drop])
+        .mount("/11", routes![day_eleven::bull_mode])
+        .mount("/11/assets", FileServer::new("assets", Options::Index));
 
     Ok(rocket.into())
 }
