@@ -9,6 +9,7 @@ mod day_four;
 mod day_one;
 mod day_seven;
 mod day_six;
+mod day_twelve;
 mod example_day;
 
 #[get("/")]
@@ -33,7 +34,17 @@ async fn main() -> shuttle_rocket::ShuttleRocket {
         )
         .mount("/8", routes![day_eight::weight, day_eight::drop])
         .mount("/11", routes![day_eleven::bull_mode])
-        .mount("/11/assets", FileServer::new("assets", Options::Index));
+        .mount("/11/assets", FileServer::new("assets", Options::Index))
+        .mount(
+            "/12",
+            routes![
+                day_twelve::save,
+                day_twelve::load,
+                day_twelve::ulids,
+                day_twelve::ulids_weekday
+            ],
+        )
+        .manage(day_twelve::TimedStrings(Default::default()));
 
     Ok(rocket.into())
 }
