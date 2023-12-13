@@ -2,6 +2,7 @@ use rocket::{
     fs::{FileServer, Options},
     get, routes,
 };
+use sqlx::{Executor as _, PgPool};
 
 mod day_eight;
 mod day_eleven;
@@ -9,6 +10,7 @@ mod day_four;
 mod day_one;
 mod day_seven;
 mod day_six;
+mod day_thirteen;
 mod day_twelve;
 mod example_day;
 
@@ -17,9 +19,16 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
+pub struct HuntPool(pub(crate) PgPool);
+
 #[shuttle_runtime::main]
-async fn main() -> shuttle_rocket::ShuttleRocket {
+async fn main(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::ShuttleRocket {
+    pool.execute(include_str!("../schema.sql"))
+        .await
+        .map_err(shuttle_runtime::CustomError::new)?;
+
     let rocket = rocket::build()
+        .manage(HuntPool(pool))
         .mount("/", routes![index])
         .mount("/-1", routes![example_day::error])
         .mount(
@@ -44,7 +53,17 @@ async fn main() -> shuttle_rocket::ShuttleRocket {
                 day_twelve::ulids_weekday
             ],
         )
-        .manage(day_twelve::TimedStrings(Default::default()));
+        .manage(day_twelve::TimedStrings(Default::default()))
+        .mount(
+            "/13",
+            routes![
+                day_thirteen::sql,
+                day_thirteen::reset,
+                day_thirteen::post_orders,
+                day_thirteen::orders_total,
+                day_thirteen::orders_popular
+            ],
+        );
 
     Ok(rocket.into())
 }
