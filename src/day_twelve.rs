@@ -2,11 +2,7 @@ use std::{collections::HashMap, sync::Mutex, time::SystemTime};
 
 use ::serde::Serialize;
 use chrono::{DateTime, Datelike, Utc};
-use rocket::{
-    http::Status,
-    serde::json::Json,
-    *,
-};
+use rocket::{http::Status, serde::json::Json, *};
 use ulid::Ulid;
 use uuid::Uuid;
 
@@ -40,17 +36,18 @@ pub fn load(string: &str, timed_strings: &State<TimedStrings>) -> Result<Json<u6
 
 #[post("/ulids", data = "<data>")]
 pub fn ulids(data: Json<Vec<String>>) -> Result<Json<Vec<String>>, Status> {
-    Ok(Json(data.iter()
-        .map(|s| Ulid::from_string(s))
-        // Go from Vec<Result<...>> to Result<Vec<...>, ...>
-        // Uses the below trait
-        .verify(|r| r.is_ok(), Status { code: 400 })?
-        .map(|r| r.unwrap())
-        .map(|u| u.to_bytes())
-        .map(|b| Uuid::from_bytes(b))
-        .map(|u| format!("{}", u.hyphenated()))
-        .rev()
-        .collect::<Vec<_>>()
+    Ok(Json(
+        data.iter()
+            .map(|s| Ulid::from_string(s))
+            // Go from Vec<Result<...>> to Result<Vec<...>, ...>
+            // Uses the below trait
+            .verify(|r| r.is_ok(), Status { code: 400 })?
+            .map(|r| r.unwrap())
+            .map(|u| u.to_bytes())
+            .map(|b| Uuid::from_bytes(b))
+            .map(|u| format!("{}", u.hyphenated()))
+            .rev()
+            .collect::<Vec<_>>(),
     ))
 }
 
