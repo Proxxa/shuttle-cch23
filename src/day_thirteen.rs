@@ -7,10 +7,6 @@ use sqlx::{Executor as _, FromRow};
 
 use crate::HuntPool;
 
-/// Helper type for deserializable types that aren't FromRow
-#[derive(Deserialize, FromRow)]
-struct RowType<T>(pub T);
-
 #[get("/sql")]
 pub async fn sql(db: &State<HuntPool>) -> Result<Json<i32>, BadRequest<String>> {
     sqlx::query_scalar("SELECT 20231213")
@@ -66,10 +62,10 @@ pub struct TotalOrders {
 
 #[get("/orders/total")]
 pub async fn orders_total(db: &State<HuntPool>) -> Result<Json<TotalOrders>, BadRequest<String>> {
-    sqlx::query_as("SELECT SUM(quantity) FROM orders")
+    sqlx::query_scalar("SELECT SUM(quantity) FROM orders")
         .fetch_one(&db.0)
         .await
-        .map(|i: RowType<i64>| Json(TotalOrders { total: i.0 }))
+        .map(|total| Json(TotalOrders { total }))
         .map_err(|e| BadRequest(e.to_string()))
 }
 
@@ -83,17 +79,17 @@ pub struct PopularOrder {
 pub async fn orders_popular(
     db: &State<HuntPool>,
 ) -> Result<Json<PopularOrder>, BadRequest<String>> {
-    sqlx::query_as("SELECT * FROM orders")
+    sqlx::query_scalar("SELECT * FROM orders")
         .fetch_all(&db.0)
         .await
         .map_err(|e| BadRequest(e.to_string()))
-        .map(|a: Vec<Order>| {
+        .map(|a: Vec<(String, i32)>| {
             dbg!(a)
                 .iter()
                 .fold(HashMap::<String, i32>::new(), |mut hm, rs| {
                     // This clone is costly, but I don't know how to avoid it.
-                    hm.entry(rs.gift_name.clone())
-                        .and_modify(|i| *i += rs.quantity)
+                    hm.entry(rs.0.clone())
+                        .and_modify(|i| *i += rs.1)
                         .or_default();
                     hm
                 })
