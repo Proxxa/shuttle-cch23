@@ -1,3 +1,5 @@
+#![recursion_limit = "512"]
+
 use rocket::{
     fs::{FileServer, Options},
     get, routes,
@@ -7,6 +9,7 @@ use sqlx::{Executor as _, PgPool};
 mod day_eight;
 mod day_eleven;
 mod day_four;
+mod day_fourteen;
 mod day_one;
 mod day_seven;
 mod day_six;
@@ -63,6 +66,10 @@ async fn main(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::Sh
                 day_thirteen::orders_total,
                 day_thirteen::orders_popular
             ],
+        )
+        .mount(
+            "/14",
+            routes![day_fourteen::unsafe_html, day_fourteen::safe_html],
         );
 
     Ok(rocket.into())
