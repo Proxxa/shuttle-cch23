@@ -10,7 +10,10 @@ pub struct HtmlContent {
 
 #[post("/unsafe", data = "<data>")]
 pub fn unsafe_html(data: Json<HtmlContent>) -> RawHtml<String> {
-    RawHtml(format!(include_str!("html/template_html.html"), data.content))
+    RawHtml(format!(
+        include_str!("html/template_html.html"),
+        data.content
+    ))
 }
 
 #[post("/safe", data = "<data>")]

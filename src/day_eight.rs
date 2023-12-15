@@ -1,29 +1,26 @@
 use std::collections::HashMap;
 
+use reqwest::Client;
 use rocket::{http::Status, serde::json::Json, *};
 use serde_json::Value;
 
 const ENDPOINT_BASE: &str = "https://pokeapi.co/api/v2/pokemon/";
-async fn get_weight(id: usize) -> Result<f64, reqwest::Error> {
-    Ok(reqwest::get(format!("{ENDPOINT_BASE}{id}"))
-        .await?
-        .json::<HashMap<String, Value>>()
-        .await?
-        .get("weight")
-        .and_then(|v| v.as_f64())
-        .map(|f| f / 10f64)
-        .unwrap())
-    // Unwrap because the weight value is guaranteed to exist
-}
-
 #[get("/weight/<id>")]
-pub async fn weight(id: usize) -> Result<String, Status> {
-    get_weight(id)
+pub async fn weight(id: usize, client: &State<Client>) -> Result<Json<f64>, Status> {
+    client
+        .get(format!("{ENDPOINT_BASE}{id}"))
+        .send()
         .await
         .map_err(|e| Status {
-            code: e.status().map_or(400, |s| s.as_u16()),
-        })
-        .map(|f| f.to_string())
+            code: e.status().map_or(500, |s| s.as_u16()),
+        })?
+        .json::<HashMap<String, Value>>()
+        .await
+        .map_err(|_| Status { code: 500 })?
+        .get("weight")
+        .and_then(|v| v.as_f64())
+        .map(|f| Json(f / 10f64))
+        .ok_or(Status { code: 500 })
 }
 
 // const GRAVITY: f64 = 9.825;
@@ -34,11 +31,8 @@ pub async fn weight(id: usize) -> Result<String, Status> {
 const VELOCITY_AFTER_10M: f64 = 14.0178457689;
 
 #[get("/drop/<id>")]
-pub async fn drop(id: usize) -> Result<Json<f64>, Status> {
-    get_weight(id)
+pub async fn drop(id: usize, client: &State<Client>) -> Result<Json<f64>, Status> {
+    weight(id, client)
         .await
-        .map_err(|e| Status {
-            code: e.status().map_or(400, |s| s.as_u16()),
-        })
-        .map(|w| Json(VELOCITY_AFTER_10M * w))
+        .map(|Json(f)| Json(f * VELOCITY_AFTER_10M))
 }
