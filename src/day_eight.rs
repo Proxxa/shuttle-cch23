@@ -21,7 +21,7 @@ pub async fn weight(id: usize) -> Result<String, Status> {
     get_weight(id)
         .await
         .map_err(|e| Status {
-            code: e.status().map_or(0, |s| s.as_u16()),
+            code: e.status().map_or(400, |s| s.as_u16()),
         })
         .map(|f| f.to_string())
 }
@@ -38,7 +38,7 @@ pub async fn drop(id: usize) -> Result<Json<f64>, Status> {
     get_weight(id)
         .await
         .map_err(|e| Status {
-            code: e.status().map_or(0, |s| s.as_u16()),
+            code: e.status().map_or(400, |s| s.as_u16()),
         })
         .map(|w| Json(VELOCITY_AFTER_10M * w))
 }
