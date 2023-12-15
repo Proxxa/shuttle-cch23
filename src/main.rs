@@ -50,7 +50,7 @@ async fn main(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::Sh
         .mount("/8", routes![day_eight::weight, day_eight::drop])
         .manage(Client::builder().build().unwrap())
         .mount("/11", routes![day_eleven::bull_mode])
-        .mount("/11/assets", FileServer::new("assets", Options::Index))
+        .mount("/11/assets", FileServer::new("assets", Options::None))
         .mount(
             "/12",
             routes![
