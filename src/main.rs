@@ -60,7 +60,7 @@ async fn main(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::Sh
                 day_twelve::ulids_weekday
             ],
         )
-        .manage(day_twelve::TimedStrings(Default::default()))
+        .manage(day_twelve::TimedStrings::default())
         .mount(
             "/13",
             routes![

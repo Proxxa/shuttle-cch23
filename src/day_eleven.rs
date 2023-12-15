@@ -35,9 +35,9 @@ pub async fn bull_mode(data: Form<MyFormField>) -> Result<Json<usize>, Status> {
         .and_then(|res| res.map_err(|_| Status { code: 422 }))
         .map(|im| im.into_rgb16())
         .map(|buf| {
-            buf.chunks_exact(3).fold(0u128, |a, p| {
-                a + (p[0] as u32 > p[2] as u32 + p[1] as u32) as u128
+            buf.chunks_exact(3).fold(0usize, |a, p| {
+                a + (p[0] as u32 > p[2] as u32 + p[1] as u32) as usize
             })
         })
-        .map(|n| Json(n as usize))
+        .map(|n| Json(n))
 }
