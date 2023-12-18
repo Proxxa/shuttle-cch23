@@ -297,10 +297,12 @@ dependencies = [
  "chrono",
  "htmlentity",
  "image",
+ "regex",
  "reqwest",
  "rocket",
  "serde",
  "serde_json",
+ "sha256",
  "shuttle-rocket",
  "shuttle-runtime",
  "shuttle-shared-db",
@@ -2537,6 +2539,19 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
+]
+
+[[package]]
+name = "sha256"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7895c8ae88588ccead14ff438b939b0c569cd619116f14b4d13fdff7b8333386"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "hex",
+ "sha2",
+ "tokio",
 ]
 
 [[package]]

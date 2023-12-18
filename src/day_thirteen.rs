@@ -27,10 +27,10 @@ pub async fn reset(db: &State<HuntPool>) -> Result<(), BadRequest<String>> {
 #[derive(Serialize, Deserialize, FromRow, Debug)]
 #[serde(crate = "rocket::serde")]
 pub struct Order {
-    id: i32,
-    region_id: i32,
-    gift_name: String,
-    quantity: i32,
+    pub id: i32,
+    pub region_id: i32,
+    pub gift_name: String,
+    pub quantity: i32,
 }
 
 #[post("/orders", data = "<data>")]
@@ -38,7 +38,7 @@ pub async fn post_orders(
     db: &State<HuntPool>,
     data: Json<Vec<Order>>,
 ) -> Result<(), BadRequest<String>> {
-    for order in dbg!(data).iter() {
+    for order in data.iter() {
         sqlx::query(
             "INSERT INTO orders (id, region_id, gift_name, quantity) VALUES ($1, $2, $3, $4)",
         )
@@ -84,7 +84,7 @@ pub async fn orders_popular(
         .await
         .map_err(|e| BadRequest(e.to_string()))
         .map(|a: Vec<(String, i32)>| {
-            dbg!(a)
+            a
                 .iter()
                 .fold(HashMap::<String, i32>::new(), |mut hm, rs| {
                     // This clone is costly, but I don't know how to avoid it.

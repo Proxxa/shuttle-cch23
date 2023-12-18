@@ -1,7 +1,5 @@
 #![recursion_limit = "512"]
 
-use std::sync::Mutex;
-
 use reqwest::Client;
 use rocket::{
     fs::{FileServer, Options},
@@ -10,7 +8,9 @@ use rocket::{
 use sqlx::{Executor as _, PgPool};
 
 mod day_eight;
+mod day_eighteen;
 mod day_eleven;
+mod day_fifteen;
 mod day_four;
 mod day_fourteen;
 mod day_one;
@@ -74,6 +74,17 @@ async fn main(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::Sh
         .mount(
             "/14",
             routes![day_fourteen::unsafe_html, day_fourteen::safe_html],
+        )
+        .mount("/15", routes![day_fifteen::nice, day_fifteen::game])
+        .mount(
+            "/18",
+            routes![
+                day_thirteen::reset,
+                day_thirteen::post_orders,
+                day_eighteen::post_regions,
+                day_eighteen::regions_total,
+                day_eighteen::regions_top
+            ],
         );
 
     Ok(rocket.into())
