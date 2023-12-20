@@ -110,7 +110,5 @@ pub async fn regions_top(
             .collect::<Vec<String>>()));
     }
 
-    Ok(Json(
-        vec.into_iter().collect::<RegionTopGiftCollection>().0
-    ))
+    Ok(Json(vec.into_iter().collect::<RegionTopGiftCollection>().0))
 }

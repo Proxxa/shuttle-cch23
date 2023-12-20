@@ -1,9 +1,16 @@
-use std::{collections::HashMap, sync::{RwLock, Arc, atomic::AtomicUsize}};
+use std::{
+    collections::HashMap,
+    sync::{atomic::AtomicUsize, Arc, RwLock},
+};
 
-use rocket::{*, futures::{SinkExt, StreamExt}, serde::json::Json};
-use rocket_ws as ws;
 use ::serde::{Deserialize, Serialize};
-use tokio::sync::broadcast::{channel, Sender, Receiver};
+use rocket::{
+    futures::{SinkExt, StreamExt},
+    serde::json::Json,
+    *,
+};
+use rocket_ws as ws;
+use tokio::sync::broadcast::{channel, Receiver, Sender};
 
 #[get("/ws/ping")]
 pub fn ping_pong(sock: ws::WebSocket) -> ws::Stream!['static] {
@@ -12,7 +19,7 @@ pub fn ping_pong(sock: ws::WebSocket) -> ws::Stream!['static] {
         for await msg in sock {
             let msg = msg?;
             match msg {
-                ws::Message::Text(s) => 
+                ws::Message::Text(s) =>
                     match s.as_str() {
                         "serve" => {
                             playing_game = true;
@@ -27,7 +34,6 @@ pub fn ping_pong(sock: ws::WebSocket) -> ws::Stream!['static] {
     }
 }
 
-
 #[derive(Default)]
 pub struct RoomSenderHolder(pub RwLock<HashMap<i32, Arc<Room>>>);
 
@@ -38,11 +44,13 @@ impl Room {
         self.0.subscribe()
     }
 
-    async fn send(&self, tweet: SignedTweet) -> Result<usize, tokio::sync::broadcast::error::SendError<SignedTweet>> {
+    async fn send(
+        &self,
+        tweet: SignedTweet,
+    ) -> Result<usize, tokio::sync::broadcast::error::SendError<SignedTweet>> {
         self.0.send(tweet)
     }
 }
-
 
 #[derive(Default)]
 pub struct TweetViewCounter(Arc<AtomicUsize>);
@@ -71,9 +79,21 @@ pub fn get_views(tvc: &State<TweetViewCounter>) -> Json<usize> {
 }
 
 #[get("/ws/room/<room>/user/<user>")]
-pub fn twitter_sock(sock: ws::WebSocket, room: i32, user: String, rsh: &State<RoomSenderHolder>, tvc: &State<TweetViewCounter>) -> ws::Channel<'static> {
+pub fn twitter_sock(
+    sock: ws::WebSocket,
+    room: i32,
+    user: String,
+    rsh: &State<RoomSenderHolder>,
+    tvc: &State<TweetViewCounter>,
+) -> ws::Channel<'static> {
     let tvc = tvc.0.clone();
-    let mut rcv = rsh.0.write().unwrap().entry(room).or_insert_with(|| Arc::new(Room(channel(1024).0))).connect();
+    let mut rcv = rsh
+        .0
+        .write()
+        .unwrap()
+        .entry(room)
+        .or_insert_with(|| Arc::new(Room(channel(1024).0)))
+        .connect();
     let room = rsh.0.read().unwrap().get(&room).unwrap().clone();
     use ws::Message::*;
     sock.channel(move |mut stream| {
@@ -106,7 +126,7 @@ pub fn twitter_sock(sock: ws::WebSocket, room: i32, user: String, rsh: &State<Ro
                         }
                     }
                 }
-            Ok(()) 
+            Ok(())
         })
     })
 }

@@ -84,8 +84,7 @@ pub async fn orders_popular(
         .await
         .map_err(|e| BadRequest(e.to_string()))
         .map(|a: Vec<(String, i32)>| {
-            a
-                .iter()
+            a.iter()
                 .fold(HashMap::<String, i32>::new(), |mut hm, rs| {
                     // This clone is costly, but I don't know how to avoid it.
                     hm.entry(rs.0.clone())
