@@ -1,5 +1,6 @@
 #![recursion_limit = "512"]
 
+use day_nineteen::{RoomSenderHolder, TweetViewCounter};
 use reqwest::Client;
 use rocket::{
     fs::{FileServer, Options},
@@ -19,6 +20,7 @@ mod day_six;
 mod day_thirteen;
 mod day_twelve;
 mod example_day;
+mod day_nineteen;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -85,6 +87,17 @@ async fn main(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::Sh
                 day_eighteen::regions_total,
                 day_eighteen::regions_top
             ],
+        )
+        .manage(TweetViewCounter::default())
+        .manage(RoomSenderHolder::default())
+        .mount(
+            "/19",
+            routes![
+                day_nineteen::ping_pong,
+                day_nineteen::twitter_sock,
+                day_nineteen::reset_views,
+                day_nineteen::get_views
+            ]
         );
 
     Ok(rocket.into())
