@@ -12,6 +12,7 @@ mod day_eight;
 mod day_eighteen;
 mod day_eleven;
 mod day_fifteen;
+mod day_five;
 mod day_four;
 mod day_fourteen;
 mod day_nineteen;
@@ -45,6 +46,7 @@ async fn main(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::Sh
             routes![/*day_one::bit_cube, */ day_one::bit_sled_cube],
         )
         .mount("/4", routes![day_four::strength, day_four::contest])
+        .mount("/5", routes![day_five::slicing, day_five::splitting])
         .mount("/6", routes![day_six::endpoint])
         .mount(
             "/7",
@@ -102,7 +104,11 @@ async fn main(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::Sh
         )
         .mount(
             "/20",
-            routes![day_twenty::archive_files, day_twenty::archive_files_size, day_twenty::cookie],
+            routes![
+                day_twenty::archive_files,
+                day_twenty::archive_files_size,
+                day_twenty::cookie
+            ],
         );
 
     Ok(rocket.into())
