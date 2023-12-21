@@ -14,13 +14,14 @@ mod day_eleven;
 mod day_fifteen;
 mod day_four;
 mod day_fourteen;
+mod day_nineteen;
 mod day_one;
 mod day_seven;
 mod day_six;
 mod day_thirteen;
 mod day_twelve;
+mod day_twenty;
 mod example_day;
-mod day_nineteen;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -97,7 +98,11 @@ async fn main(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::Sh
                 day_nineteen::twitter_sock,
                 day_nineteen::reset_views,
                 day_nineteen::get_views
-            ]
+            ],
+        )
+        .mount(
+            "/20",
+            routes![day_twenty::archive_files, day_twenty::archive_files_size, day_twenty::cookie],
         );
 
     Ok(rocket.into())
