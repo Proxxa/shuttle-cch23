@@ -25,6 +25,7 @@ mod day_18;
 mod day_19;
 mod day_20;
 mod day_21;
+mod day_22;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -107,7 +108,10 @@ async fn main(
             ],
         )
         .manage(secrets)
-        .mount("/21", routes![day_21::coords, day_21::country]);
+        .mount("/21", routes![day_21::coords, day_21::country])
+        .mount("/22", routes![day_22::integers, 
+        day_22::flight
+        ]);
 
     Ok(rocket.into())
 }
