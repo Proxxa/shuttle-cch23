@@ -16,10 +16,10 @@ pub fn integers(data: &str) -> Result<String, BadRequest<String>> {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct PlanetCoords(f32, f32, f32);
+pub struct StarCoords(f32, f32, f32);
 
-impl PlanetCoords {
-    pub fn distance(&self, other: &PlanetCoords) -> f32 {
+impl StarCoords {
+    pub fn distance(&self, other: &StarCoords) -> f32 {
         f32::sqrt(
             f32::powi(self.0 - other.0, 2)
                 + f32::powi(self.1 - other.1, 2)
@@ -66,7 +66,7 @@ impl DerefMut for Portals {
 }
 
 #[derive(Debug, Clone)]
-pub struct Universe(Vec<PlanetCoords>, Vec<Portal>);
+pub struct Universe(Vec<StarCoords>, Vec<Portal>);
 
 #[async_trait]
 impl<'r> FromData<'r> for Universe {
@@ -76,59 +76,58 @@ impl<'r> FromData<'r> for Universe {
         <String as FromData<'r>>::from_data(req, data)
             .await
             .map(|s| {
-                Universe(
-                    s.lines()
-                        .skip(1)
-                        .take(s.lines().take(1).exactly_one().unwrap().parse().unwrap())
-                        .map(|coords| coords.split_ascii_whitespace())
-                        .map(|coords| coords.collect_tuple())
-                        .map(|opt| opt.unwrap())
-                        .map(|(x, y, z)| {
-                            PlanetCoords(x.parse().unwrap(), y.parse().unwrap(), z.parse().unwrap())
-                        })
-                        .collect_vec(),
-                    s.lines()
-                        .skip(
-                            2 + s
-                                .lines()
-                                .take(1)
-                                .exactly_one()
-                                .unwrap()
-                                .parse::<usize>()
-                                .unwrap(),
+                s.lines()
+                    .take(1)
+                    .exactly_one()
+                    .unwrap()
+                    .parse()
+                    .map(|n_stars| {
+                        Universe(
+                            s.lines()
+                                .skip(1)
+                                .take(n_stars)
+                                .map(|coords| coords.split_ascii_whitespace())
+                                .map(|coords| coords.collect_tuple())
+                                .map(|opt| opt.unwrap())
+                                .map(|(x, y, z)| {
+                                    StarCoords(
+                                        x.parse().unwrap(),
+                                        y.parse().unwrap(),
+                                        z.parse().unwrap(),
+                                    )
+                                })
+                                .collect_vec(),
+                            s.lines()
+                                .skip(2 + n_stars)
+                                .map(|coords| coords.split_ascii_whitespace())
+                                .map(|coords| coords.collect_tuple())
+                                .map(|opt| opt.unwrap())
+                                .map(|(a, b)| Portal(a.parse().unwrap(), b.parse().unwrap()))
+                                .collect_vec(),
                         )
-                        .map(|coords| coords.split_ascii_whitespace())
-                        .map(|coords| coords.collect_tuple())
-                        .map(|opt| opt.unwrap())
-                        .map(|(a, b)| Portal(a.parse().unwrap(), b.parse().unwrap()))
-                        .collect_vec(),
-                )
+                    })
+                    .unwrap()
             })
     }
 }
 
 #[post("/rocket", data = "<data>")]
 pub fn flight(data: Universe) -> Option<String> {
-    println!("\n");
-    info!("New universe discovered! Traversing...");
-    let Universe(planet_coords, portals) = data;
+    let Universe(star_coords, portals) = data;
     let graph = Portals::from(portals.clone());
-    let n_planets = planet_coords.len();
+    let n_stars = star_coords.len();
 
     dbg!(&graph);
 
     fn find_path<'a>(
         graph: &Portals,
-        planet: usize,
+        star: usize,
         target: usize,
-        planets_visited: Vec<usize>,
-    ) -> Vec<Vec<Portal>>
-    {
-        info!("Arrived at star {planet}");
-        let planets_visited = planets_visited.into_iter().chain([planet]);
-        if planet == target {
-            info!("\tTarget reached.");
-            return Vec::from([planets_visited
+        stars_visited: Vec<usize>,
+    ) -> Vec<Vec<Portal>> {
+        let stars_visited = stars_visited.into_iter().chain([star]);
+        if star == target {
+            return Vec::from([stars_visited
                 .into_iter()
                 .tuple_windows()
                 .map(|(a, b)| Portal(a, b))
@@ -137,19 +136,23 @@ pub fn flight(data: Universe) -> Option<String> {
 
         let mut paths: Vec<Vec<Portal>> = Vec::new();
         for &next in graph
-            .get(&planet)
+            .get(&star)
             .unwrap()
             .iter()
-            .filter(|&&pl| !planets_visited.clone().any(|p| p == pl))
+            .filter(|&&pl| !stars_visited.clone().any(|p| p == pl))
         {
-            info!("\tTrying to traverse {planet}->{next}");
-            paths.extend(find_path(graph, next, target, planets_visited.clone().collect_vec()))
+            paths.extend(find_path(
+                graph,
+                next,
+                target,
+                stars_visited.clone().collect_vec(),
+            ))
         }
 
         dbg!(paths)
     }
 
-    find_path(&graph, 0, n_planets - 1, Vec::new())
+    find_path(&graph, 0, n_stars - 1, Vec::new())
         .into_iter()
         .min_by_key(|path| path.len())
         .map(|path| {
@@ -157,10 +160,7 @@ pub fn flight(data: Universe) -> Option<String> {
                 "{} {:.3}",
                 path.len(),
                 path.iter().fold(0., |tot, p| tot
-                    + planet_coords[p.0].distance(&planet_coords[p.1]))
+                    + star_coords[p.0].distance(&star_coords[p.1]))
             )
         })
-
-    // todo!()
-    // None
 }
